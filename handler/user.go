@@ -47,9 +47,6 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	response := helper.APIResponse("Account has been registered", http.StatusCreated, "success", registerResponse)
 
 	c.JSON(http.StatusOK, response)
-	// map input dari user ke struct RegisterUserInput
-	// struct di atas kita passing sebagai parameter service
-	// di file user.go
 }
 
 func (h *userHandler) Login(c *gin.Context) {
@@ -95,3 +92,34 @@ func (h *userHandler) GetUsers(c *gin.Context){
 	response := helper.APIResponse("List of users", http.StatusOK, "success", user.FormatUsers(users))
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
+	var emailInput user.CheckEmailInput
+	err := c.ShouldBindJSON(&emailInput)
+	if err != nil {
+		// error handling
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		errorResponse := helper.APIResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, errorResponse)
+		return
+	}
+
+	isEmailAvailable, err := h.userService.IsEmailAvailable(emailInput)
+	if err != nil {
+		response := helper.APIResponse("Email checking failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	errorMessage := "Email has been registered"
+		if isEmailAvailable {
+			errorMessage = "Email is available"
+		}
+
+		data := gin.H{"is_available": isEmailAvailable}
+		response := helper.APIResponse(errorMessage, http.StatusOK, "success", data)
+		c.JSON(http.StatusOK, response)
+}
+
