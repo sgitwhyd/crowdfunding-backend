@@ -51,3 +51,35 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	// struct di atas kita passing sebagai parameter service
 	// di file user.go
 }
+
+func (h *userHandler) Login(c *gin.Context) {
+	// user memasukkan input (email dan password)
+	var loginPayload user.LoginUserInput
+	err := c.ShouldBindJSON(&loginPayload)
+	if err != nil {
+		// error handling
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		errorResponse := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, errorResponse)
+		return
+	}
+	// input ditangkap handler
+	// mapping dari input user ke input struct
+
+	// input struct passing service
+	logged, err := h.userService.Login(loginPayload)
+	
+	if(err != nil){
+		errorMessage := gin.H{"errors": err.Error()}
+		errorResponse := helper.APIResponse("Login failed", http.StatusNotFound, "error", errorMessage)
+		c.JSON(http.StatusNotFound, errorResponse)
+		return
+	}
+	// generate jwt token
+	token := "token"
+	// kembalikan response
+	loginResponse := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", user.FormatUser(logged, token))
+	c.JSON(http.StatusOK, loginResponse)
+}
