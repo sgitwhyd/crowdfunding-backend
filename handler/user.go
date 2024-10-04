@@ -83,3 +83,15 @@ func (h *userHandler) Login(c *gin.Context) {
 	loginResponse := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", user.FormatUser(logged, token))
 	c.JSON(http.StatusOK, loginResponse)
 }
+
+func (h *userHandler) GetUsers(c *gin.Context){
+	users, err := h.userService.GetUsers()
+	if err != nil {
+		errorResponse := helper.APIResponse("Failed to get users", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	response := helper.APIResponse("List of users", http.StatusOK, "success", user.FormatUsers(users))
+	c.JSON(http.StatusOK, response)
+}

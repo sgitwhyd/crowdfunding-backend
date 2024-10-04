@@ -10,6 +10,7 @@ import (
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	Login(input LoginUserInput) (User, error)
+	GetUsers() ([]User, error)
 }
 
 type service struct {
@@ -64,4 +65,14 @@ func (s *service) Login(input LoginUserInput) (User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *service) GetUsers() ([]User, error){
+	users, err := s.repository.GetUsers()
+	if err != nil {
+		return users, errors.New("no users found")
+	}
+
+	return users, nil
+
 }
