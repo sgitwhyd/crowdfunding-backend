@@ -13,9 +13,9 @@ import (
 )
 
 func main(){
-		gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.DebugMode)
 	log.SetOutput(os.Stdout)
- dsn := "root:@tcp(127.0.0.1:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(127.0.0.1:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
   db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -31,6 +31,7 @@ func main(){
 	userService := user.NewService(userRepository)
 	userHandler := handler.NewUserHandler(userService)
 
+
 	router := gin.Default()
 	router.Use(gin.Logger())
 	api := router.Group("/api/v1")
@@ -38,6 +39,7 @@ func main(){
 	api.POST("/login", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 	api.GET("/users", userHandler.GetUsers)
+	api.POST("/avatar", userHandler.UploadAvatar)
 
 
 	router.Run()

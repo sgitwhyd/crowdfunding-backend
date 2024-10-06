@@ -3,7 +3,9 @@ package handler
 import (
 	"be-bwastartup/helper"
 	"be-bwastartup/user"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -123,3 +125,38 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 		c.JSON(http.StatusOK, response)
 }
 
+func (s *userHandler) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{
+			"is_uploaded": false,
+			"error": "Required file avatar",
+		}
+		response := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+	}
+
+	path := fmt.Sprintf("images/%d-%s", time.Now().Unix(), file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+	}
+
+	// JWT (sementara hardcode, seakan-akan user yang login ID = 1)
+	currentUser := 5
+	user, err := s.userService.SaveAvatar(currentUser, file.Filename)
+	if  err != nil {
+		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	data := gin.H{"avatar_url": user.AvatarFileName}
+	response := helper.APIResponse("Avatar successfuly uploaded", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
+
+
+}

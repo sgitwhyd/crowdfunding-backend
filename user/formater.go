@@ -6,6 +6,7 @@ type RegisterUserResponse struct {
 	Occupation string `json:"occupation"`
 	Email      string `json:"email"`
 	Token      string `json:"token"`
+	AvatarUrl  string `json:"avatar_url"`
 }
 
 type GetUserResponse struct {
@@ -14,6 +15,7 @@ type GetUserResponse struct {
 	Occupation string `json:"occupation"`
 	Email      string `json:"email"`
 	Role       string `json:"role"`
+	AvatarUrl  string `json:"avatar_url"`
 }
 
 func FormatUser(user User, token string) RegisterUserResponse {
@@ -23,6 +25,7 @@ func FormatUser(user User, token string) RegisterUserResponse {
 		Occupation: user.Occupation,
 		Email:      user.Email,
 		Token:      token,
+		AvatarUrl:  user.AvatarFileName,
 	}
 
 	return userResponse
@@ -37,6 +40,7 @@ func FormatUsers(users []User) []GetUserResponse {
 			Occupation: user.Occupation,
 			Email:      user.Email,
 			Role:       user.Role,
+			AvatarUrl:  "http://localhost:8080/images/" + user.AvatarFileName,
 		}
 
 		usersResponse = append(usersResponse, userResponse)
