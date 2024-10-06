@@ -1,6 +1,7 @@
 package main
 
 import (
+	"be-bwastartup/auth"
 	"be-bwastartup/handler"
 	"be-bwastartup/user"
 	"fmt"
@@ -21,15 +22,16 @@ func main(){
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-
-
 	fmt.Println("Connection Success")
-
-
+	// repositorys
 	userRepository := user.NewRepository(db)
+
+	// services
 	userService := user.NewService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewService()
+
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 
 	router := gin.Default()

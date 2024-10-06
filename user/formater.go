@@ -25,7 +25,6 @@ func FormatUser(user User, token string) RegisterUserResponse {
 		Occupation: user.Occupation,
 		Email:      user.Email,
 		Token:      token,
-		AvatarUrl:  user.AvatarFileName,
 	}
 
 	return userResponse

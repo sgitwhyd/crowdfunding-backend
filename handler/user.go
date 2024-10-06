@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"be-bwastartup/auth"
 	"be-bwastartup/helper"
 	"be-bwastartup/user"
 	"fmt"
@@ -11,13 +12,16 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
+
+
 	// tangkap input dari user
 	var input user.RegisterUserInput
 
@@ -39,11 +43,18 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
+	
+	
+	token , err := h.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		errorResponse := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
 
-	userToken := "token" // ini sementara
 
 
-	registerResponse := user.FormatUser(newUser, userToken)
+	registerResponse := user.FormatUser(newUser, token)
 
 	response := helper.APIResponse("Account has been registered", http.StatusCreated, "success", registerResponse)
 
@@ -51,7 +62,6 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 }
 
 func (h *userHandler) Login(c *gin.Context) {
-	// user memasukkan input (email dan password)
 	var loginPayload user.LoginUserInput
 	err := c.ShouldBindJSON(&loginPayload)
 	if err != nil {
@@ -63,10 +73,6 @@ func (h *userHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, errorResponse)
 		return
 	}
-	// input ditangkap handler
-	// mapping dari input user ke input struct
-
-	// input struct passing service
 	logged, err := h.userService.Login(loginPayload)
 	
 	if(err != nil){
@@ -75,9 +81,15 @@ func (h *userHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusNotFound, errorResponse)
 		return
 	}
-	// generate jwt token
-	token := "token"
-	// kembalikan response
+
+	token, err := h.authService.GenerateToken(logged.ID)
+	if(err != nil){
+		errorMessage := gin.H{"errors": err.Error()}
+		errorResponse := helper.APIResponse("Login failed", http.StatusNotFound, "error", errorMessage)
+		c.JSON(http.StatusNotFound, errorResponse)
+		return
+	}
+
 	loginResponse := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", user.FormatUser(logged, token))
 	c.JSON(http.StatusOK, loginResponse)
 }
