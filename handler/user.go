@@ -5,7 +5,6 @@ import (
 	"be-bwastartup/user"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -126,6 +125,9 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 }
 
 func (s *userHandler) UploadAvatar(c *gin.Context) {
+	// JWT (sementara hardcode, seakan-akan user yang login ID = 1)
+	userId := 5
+
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		data := gin.H{
@@ -136,7 +138,8 @@ func (s *userHandler) UploadAvatar(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 	}
 
-	path := fmt.Sprintf("images/%d-%s", time.Now().Unix(), file.Filename)
+
+	path := fmt.Sprintf("images/%d-%s", userId, file.Filename)
 
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
@@ -145,9 +148,8 @@ func (s *userHandler) UploadAvatar(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 	}
 
-	// JWT (sementara hardcode, seakan-akan user yang login ID = 1)
-	currentUser := 5
-	user, err := s.userService.SaveAvatar(currentUser, file.Filename)
+	
+	user, err := s.userService.SaveAvatar(userId, path)
 	if  err != nil {
 		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, errorResponse)
