@@ -18,6 +18,14 @@ type GetUserResponse struct {
 	AvatarUrl  string `json:"avatar_url"`
 }
 
+type DetailUserResponse struct {
+	Name       string `json:"name"`
+	Occupation string `json:"occupation"`
+	Email      string `json:"email"`
+	Role       string `json:"role"`
+	AvatarUrl  string `json:"avatar_url"`
+}
+
 func FormatUser(user User, token string) RegisterUserResponse {
 	userResponse := RegisterUserResponse{
 		ID:         user.ID,
@@ -46,4 +54,16 @@ func FormatUsers(users []User) []GetUserResponse {
 	}
 
 	return usersResponse
+}
+
+func FormatUserDetail(user User) DetailUserResponse {
+	userResponse := DetailUserResponse{
+		Name:       user.Name,
+		Occupation: user.Occupation,
+		Email:      user.Email,
+		Role:       user.Role,
+		AvatarUrl:  "http://localhost:8080/images/" + user.AvatarFileName,
+	}
+
+	return userResponse
 }

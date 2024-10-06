@@ -138,7 +138,8 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 
 func (s *userHandler) UploadAvatar(c *gin.Context) {
 	// JWT (sementara hardcode, seakan-akan user yang login ID = 1)
-	userId := 5
+	currentUser := c.MustGet("currentUser").(user.User)
+	userId := currentUser.ID
 
 	file, err := c.FormFile("avatar")
 	if err != nil {
@@ -171,6 +172,11 @@ func (s *userHandler) UploadAvatar(c *gin.Context) {
 	data := gin.H{"avatar_url": user.AvatarFileName}
 	response := helper.APIResponse("Avatar successfuly uploaded", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
+}
 
-
+func (h *userHandler) GetUser(c *gin.Context) {
+	currentUser := c.MustGet("currentUser").(user.User)
+	formatter := user.FormatUserDetail(currentUser)
+	response := helper.APIResponse("Successfuly get user detail", http.StatusOK, "success", formatter)
+	c.JSON(http.StatusOK, response)
 }
