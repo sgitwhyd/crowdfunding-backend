@@ -47,7 +47,11 @@ func main(){
 
 	router := gin.Default()
 	router.Use(gin.Logger())
+	
 	api := router.Group("/api/v1")
+
+	router.Static("/images", "./images")
+
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/login", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
@@ -59,6 +63,7 @@ func main(){
 
 	// campaign
 	api.GET("/campaigns", campaignHandler.FindCampaigns)
+	api.GET("/campaigns/:id", campaignHandler.FindCampaign)
 
 
 	router.Run()
