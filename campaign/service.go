@@ -11,6 +11,7 @@ type Service interface {
 	GetCampaign(input GetCampaignInput) (Campaign, error)
 	GetCampaignBySlug(input GetCampaignBySlugInput)(Campaign, error)
 	CreateCampaign(input CreateCampaignInput)(Campaign, error)
+	UpdateCampaign(slug GetCampaignBySlugInput, data CreateCampaignInput)(Campaign, error)
 }
 
 type service struct {
@@ -95,4 +96,30 @@ func (s *service) CreateCampaign(input CreateCampaignInput)(Campaign, error){
 	}
 
 	return savedCampaign, nil
+}
+
+func (s *service) UpdateCampaign(input GetCampaignBySlugInput, data CreateCampaignInput)(Campaign, error){
+	campaign, err := s.repository.FindBySlug(input.Slug)
+	if err != nil {
+		return campaign, err
+	}
+
+	campaign.Name = data.Name
+	campaign.ShortDescription = data.ShortDescription
+	campaign.Description = data.Description
+	campaign.Perks = data.Perks
+	campaign.GoalAmount = data.GoalAmount
+
+	if campaign.User.ID != data.User.ID {
+		return campaign, errors.New("not an owner of the campaign")
+	}
+
+
+	updatedCampaign, err := s.repository.Save(campaign)
+	if err != nil {
+		return updatedCampaign, err
+	}
+
+	return updatedCampaign, nil
+
 }
