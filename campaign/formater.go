@@ -20,7 +20,7 @@ type UserFormat struct {
 
 type Images struct {
 	ImageUrl  string `json:"image_url"`
-	IsPrimary bool   `json:"is_primary"`
+	IsPrimary int   `json:"is_primary"`
 }
 
 type CampaignDetailFormat struct {
@@ -123,9 +123,9 @@ func FormatDetailCampaign(campaign Campaign) CampaignDetailFormat {
 		imageFormat := Images{}
 		imageFormat.ImageUrl = image.FileName
 
-		isPrimary := false
-		if image.IsPrimary {
-			isPrimary = true
+		isPrimary := 0
+		if image.IsPrimary == 1 {
+			isPrimary = 1
 		}
 
 		imageFormat.IsPrimary = isPrimary

@@ -44,7 +44,6 @@ func main(){
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService, authService)
 
-
 	router := gin.Default()
 	router.Use(gin.Logger())
 	
@@ -67,7 +66,7 @@ func main(){
 	api.GET("/campaigns/:slug", campaignHandler.FindCampaignBySlug)
 	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	api.PUT("/campaigns/:slug", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
-
+	api.POST("/campaigns/images", authMiddleware(authService, userService), campaignHandler.UploadImage)
 
 	router.Run()
 
