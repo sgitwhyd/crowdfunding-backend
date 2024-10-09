@@ -60,28 +60,6 @@ func (h *campaignHandler) FindCampaign(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *campaignHandler) FindCampaignBySlug(c *gin.Context){
-	var input campaign.GetCampaignBySlugInput
-
-	err := c.ShouldBindUri(&input)
-	if err != nil {
-		error := gin.H{"errors": err.Error()}
-		errorResponse := helper.APIResponse("Failed to get campaign", http.StatusBadRequest, "error", error)
-		c.JSON(http.StatusBadRequest, errorResponse)
-		return
-	}
-
-	data, err := h.campaignService.GetCampaignBySlug(input)
-	if err != nil {
-		error := gin.H{"errors": err.Error()}
-		errorResponse := helper.APIResponse("Failed to get campaign", http.StatusNotFound, "error", error)
-		c.JSON(http.StatusNotFound, errorResponse)
-		return
-	}
-
-	response := helper.APIResponse("Campaign detail", http.StatusOK, "success", campaign.FormatDetailCampaign(data))
-	c.JSON(http.StatusOK, response)
-}
 
 func (h *campaignHandler) CreateCampaign(c *gin.Context){
 	var createCampaignPayload campaign.CreateCampaignInput
@@ -124,9 +102,9 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 	currentUser := c.MustGet("currentUser").(user.User)
 	updateCampaignPayload.User = currentUser
 
-	var inputSlug campaign.GetCampaignBySlugInput
+	var inputID campaign.GetCampaignInput
 
-	err = c.ShouldBindUri(&inputSlug)
+	err = c.ShouldBindUri(&inputID)
 	if err != nil {
 		errors := gin.H{"errors": err.Error()}
 		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", errors)
@@ -134,7 +112,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 		return
 	}
 
-	updatedCampaign, err := h.campaignService.UpdateCampaign(inputSlug, updateCampaignPayload)
+	updatedCampaign, err := h.campaignService.UpdateCampaign(inputID, updateCampaignPayload)
 	if err != nil {
 		errors := gin.H{"errors": err.Error()}
 		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", errors)

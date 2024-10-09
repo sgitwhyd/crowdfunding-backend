@@ -62,10 +62,9 @@ func main(){
 
 	// campaign
 	api.GET("/campaigns", campaignHandler.FindCampaigns)
-	// api.GET("/campaigns/:id", campaignHandler.FindCampaign)
-	api.GET("/campaigns/:slug", campaignHandler.FindCampaignBySlug)
+	api.GET("/campaigns/:id", campaignHandler.FindCampaign)
 	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
-	api.PUT("/campaigns/:slug", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
+	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("/campaigns/images", authMiddleware(authService, userService), campaignHandler.UploadImage)
 
 	router.Run()

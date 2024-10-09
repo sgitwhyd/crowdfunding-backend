@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gosimple/slug"
 )
@@ -9,9 +10,8 @@ import (
 type Service interface {
 	GetCampaigns(userID int) ([]Campaign, error)
 	GetCampaign(input GetCampaignInput) (Campaign, error)
-	GetCampaignBySlug(input GetCampaignBySlugInput)(Campaign, error)
 	CreateCampaign(input CreateCampaignInput)(Campaign, error)
-	UpdateCampaign(slug GetCampaignBySlugInput, data CreateCampaignInput)(Campaign, error)
+	UpdateCampaign(slug GetCampaignInput, data CreateCampaignInput)(Campaign, error)
 	UploadCampaignImage(input UploadCampaignImageInput, fileLocation string)(CampaignImage, error)
 }
 
@@ -55,8 +55,8 @@ func (s *service) GetCampaign(input GetCampaignInput) (Campaign, error) {
 	return campaign, nil
 }
 
-func (s *service) GetCampaignBySlug(input GetCampaignBySlugInput) (Campaign, error) {
-	campaign, err := s.repository.FindBySlug(input.Slug)
+func (s *service) GetCampaignByID(input GetCampaignInput) (Campaign, error) {
+	campaign, err := s.repository.FindByID(input.ID)
 	if err != nil {
 		return campaign, err
 	}
@@ -77,19 +77,11 @@ func (s *service) CreateCampaign(input CreateCampaignInput)(Campaign, error){
 	campaign.Perks = input.Perks
 	campaign.UserID = input.User.ID
 
-	slug := slug.Make(input.Name)
 
 	// check slug already use or not
-	findedCampaign, err := s.repository.FindBySlug(slug)
-	if err != nil {
-		return findedCampaign, err
-	}
+	slugCandidate := fmt.Sprintf("%s %d", input.Name, input.User.ID)
+	campaign.Slug = slug.Make(slugCandidate)
 
-	if findedCampaign.ID != 0 {
-		return findedCampaign, errors.New("title already taken")
-	}
-	
-	campaign.Slug = slug
 
 	savedCampaign, err := s.repository.Save(campaign)
 	if err != nil {
@@ -99,8 +91,8 @@ func (s *service) CreateCampaign(input CreateCampaignInput)(Campaign, error){
 	return savedCampaign, nil
 }
 
-func (s *service) UpdateCampaign(input GetCampaignBySlugInput, data CreateCampaignInput)(Campaign, error){
-	campaign, err := s.repository.FindBySlug(input.Slug)
+func (s *service) UpdateCampaign(input GetCampaignInput, data CreateCampaignInput)(Campaign, error){
+	campaign, err := s.repository.FindByID(input.ID)
 	if err != nil {
 		return campaign, err
 	}
