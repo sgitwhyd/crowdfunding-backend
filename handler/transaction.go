@@ -3,6 +3,7 @@ package handler
 import (
 	"be-bwastartup/campaign"
 	"be-bwastartup/helper"
+	"be-bwastartup/payment"
 	"be-bwastartup/transaction"
 	"be-bwastartup/user"
 	"net/http"
@@ -13,10 +14,11 @@ import (
 type transactionHandler struct {
 	service transaction.Service
 	campaignService campaign.Service
+	paymentService payment.Service
 }
 
-func NewTransactionHandler(service transaction.Service, campaignService campaign.Service) *transactionHandler {
-	return &transactionHandler{service, campaignService}
+func NewTransactionHandler(service transaction.Service, campaignService campaign.Service, paymentService payment.Service) *transactionHandler {
+	return &transactionHandler{service, campaignService, paymentService}
 }
 
 func (h *transactionHandler) GetCampaignTransactions(c *gin.Context){
@@ -70,3 +72,39 @@ func (h *transactionHandler) GetUserTransactions(c *gin.Context){
 	response := helper.APIResponse("List of backed campaign", http.StatusOK, "success", transaction.FormatBackeds(transactions))
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *transactionHandler) CreateTransaction(c *gin.Context){
+	var input transaction.CreateTransactionInput
+
+	err := c.ShouldBind(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to create transaction", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+
+
+	newTransaction, err := h.service.CreateTransaction(input, currentUser)
+	if err != nil {
+		data := gin.H{"errors": err.Error()}
+		response := helper.APIResponse("Failed to create transaction", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("Transaction has been created", http.StatusOK, "success", transaction.FormatTransaction(newTransaction))
+
+	c.JSON(http.StatusOK, response)
+
+
+}
+// input ammount dari user
+// maping dari input user ke struct input service
+// panggil service buat transaksi, panggil sistem midtrans
+// panggil repo create new transaksi

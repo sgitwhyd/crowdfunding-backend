@@ -5,6 +5,7 @@ import (
 	"be-bwastartup/campaign"
 	"be-bwastartup/handler"
 	"be-bwastartup/helper"
+	"be-bwastartup/payment"
 	"be-bwastartup/transaction"
 	"be-bwastartup/user"
 	"fmt"
@@ -15,20 +16,30 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main(){
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	gin.SetMode(gin.DebugMode)
 	log.SetOutput(os.Stdout)
-	dsn := "root:@tcp(127.0.0.1:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ")/" + os.Getenv("DB_NAME") + "?charset=utf8&parseTime=True&loc=Local"
   db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	fmt.Println("Connection Success")
+
+
+
+	PORT := os.Getenv("PORT")
 
 	
 	// repositorys
@@ -40,18 +51,19 @@ func main(){
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
-	transactionService := transaction.NewService(transactionRepository)
-	
+	paymentService := payment.NewService()
+	transactionService := transaction.NewService(transactionRepository, paymentService, campaignService)
 
 	// handler
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService, authService)
-	transactionHandler := handler.NewTransactionHandler(transactionService, campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService, campaignService, paymentService)
 
 	router := gin.Default()
 	router.Use(gin.Logger())
 	
 	api := router.Group("/api/v1")
+	api.Use(authMiddleware(authService, userService))
 
 	router.Static("/images", "./images")
 
@@ -61,21 +73,22 @@ func main(){
 	api.GET("/users", userHandler.GetUsers)
 	
 	// users
-	api.POST("/avatar", authMiddleware(authService, userService), userHandler.UploadAvatar)
-	api.GET("/me", authMiddleware(authService, userService), userHandler.GetUser)
+	api.POST("/avatar", userHandler.UploadAvatar)
+	api.GET("/me", userHandler.GetUser)
 
 	// campaign
 	api.GET("/campaigns", campaignHandler.FindCampaigns)
 	api.GET("/campaigns/:id", campaignHandler.FindCampaign)
-	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
-	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
-	api.POST("/campaigns/images", authMiddleware(authService, userService), campaignHandler.UploadImage)
+	api.POST("/campaigns", campaignHandler.CreateCampaign)
+	api.PUT("/campaigns/:id", campaignHandler.UpdateCampaign)
+	api.POST("/campaigns/images", campaignHandler.UploadImage)
 
 	// transaction
-	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
-	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
-	
-	router.Run()
+	api.GET("/campaigns/:id/transactions", transactionHandler.GetCampaignTransactions)
+	api.GET("/transactions", transactionHandler.GetUserTransactions)
+	api.POST("/transactions", transactionHandler.CreateTransaction)
+
+	router.Run(PORT)
 
 }
 
