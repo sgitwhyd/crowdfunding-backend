@@ -35,7 +35,7 @@ func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string
 
 		snapReq := &snap.Request{
 			TransactionDetails: midtrans.TransactionDetails{
-				OrderID: "order-" + strconv.Itoa(transaction.ID),
+				OrderID: strconv.Itoa(transaction.ID),
 				GrossAmt: int64(transaction.Amount),
 			},
 			CustomerDetail: &midtrans.CustomerDetails{
