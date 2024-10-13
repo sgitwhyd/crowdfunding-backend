@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -52,7 +53,7 @@ func main(){
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
 	paymentService := payment.NewService()
-	transactionService := transaction.NewService(transactionRepository, paymentService, campaignService)
+	transactionService := transaction.NewService(transactionRepository, paymentService, campaignRepository)
 
 	// handler
 	userHandler := handler.NewUserHandler(userService, authService)
@@ -60,6 +61,7 @@ func main(){
 	transactionHandler := handler.NewTransactionHandler(transactionService, campaignService, paymentService)
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Use(gin.Logger())
 	
 	api := router.Group("/api/v1")
@@ -87,6 +89,7 @@ func main(){
 	api.GET("/campaigns/:id/transactions", transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", transactionHandler.GetUserTransactions)
 	api.POST("/transactions", transactionHandler.CreateTransaction)
+	router.POST("/api/v1/transactions/notifications", transactionHandler.GetNotification)
 
 	router.Run(PORT)
 
