@@ -11,7 +11,7 @@ type Service interface {
 	GetCampaigns(userID int) ([]Campaign, error)
 	GetCampaign(input GetCampaignInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput)(Campaign, error)
-	UpdateCampaign(slug GetCampaignInput, data CreateCampaignInput)(Campaign, error)
+	UpdateCampaign(input GetCampaignInput, data CreateCampaignInput)(Campaign, error)
 	UploadCampaignImage(input UploadCampaignImageInput, fileLocation string)(CampaignImage, error)
 }
 
