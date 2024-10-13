@@ -17,3 +17,10 @@ type UpdateTransactionInput struct {
 	Status string `json:"status" binding:"required"`
 	
 }
+
+type TransactionNotificationStatusInput struct {
+	TransactionStatus string `json:"transaction_status" binding:"required"`
+	OrderID 				 string `json:"order_id" binding:"required"`
+	PaymentType 		 string `json:"payment_type" binding:"required"`
+	FraudStatus 		 string `json:"fraud_status" binding:"required"`
+}
