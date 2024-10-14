@@ -14,6 +14,7 @@ type Service interface {
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
 	UploadAvatar(ID int, fileLocation string) (User, error)
 	UpdateUser(userID int, input FormUpdateUserInput) (User, error)
+	GetAllUsers() ([]User, error)
 }
 
 type service struct {
@@ -120,4 +121,13 @@ func (s *service) UpdateUser(userID int, input FormUpdateUserInput)(User, error)
 	}
 
 	return updatedUser, nil
+}
+
+func (s *service) GetAllUsers()([]User, error){
+	users, err := s.repository.FindAll()
+	if err != nil {
+		return users, err
+	}
+
+	return users, nil
 }
