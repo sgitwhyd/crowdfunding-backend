@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"be-bwastartup/auth"
 	"be-bwastartup/helper"
 	"be-bwastartup/user"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,10 +12,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -39,7 +42,13 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	userToken := "token" // ini sementara
+	userToken, err := h.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		errorsResponse := gin.H{"errors": err.Error()}
+		errorResponse := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", errorsResponse)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
 
 
 	registerResponse := user.FormatUser(newUser, userToken)
@@ -47,9 +56,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	response := helper.APIResponse("Account has been registered", http.StatusCreated, "success", registerResponse)
 
 	c.JSON(http.StatusOK, response)
-	// map input dari user ke struct RegisterUserInput
-	// struct di atas kita passing sebagai parameter service
-	// di file user.go
+
 }
 
 func (h *userHandler) Login(c *gin.Context){
@@ -73,7 +80,15 @@ func (h *userHandler) Login(c *gin.Context){
 		return
 	}
 
-	response := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", user.FormatUser(loggedinUser, "token"))
+	t, err := h.authService.GenerateToken(loggedinUser.ID)
+	if err != nil {
+		errorsResponse := gin.H{"errors": err.Error()}
+		errorResponse := helper.APIResponse("Login failed", http.StatusBadRequest, "error", errorsResponse)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	response := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", user.FormatUser(loggedinUser, t))
 	c.JSON(http.StatusOK, response)
 }
 
@@ -110,5 +125,66 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context){
 	}
 
 	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context){
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusUnprocessableEntity, "error", data)
+		c.JSON(http.StatusUnprocessableEntity, errorResponse)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	path := fmt.Sprintf("images/%d-%s", currentUser.ID, file.Filename)
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	_, err = h.userService.UploadAvatar(currentUser.ID, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helper.APIResponse("Avatar successfuly uploaded", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UpdateUser(c *gin.Context){
+	var input user.FormUpdateUserInput
+
+	err := c.ShouldBind(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		errorReponse := helper.APIResponse("Update failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusBadRequest, errorReponse)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	userID	:= currentUser.ID
+	updatedUser, err := h.userService.UpdateUser(userID, input)
+	if err != nil {
+		errorsResponse := gin.H{"errors": err.Error()}
+		errorResponse := helper.APIResponse("Update failed", http.StatusBadRequest, "error", errorsResponse)
+		c.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	response := helper.APIResponse("Successfuly updated user data", http.StatusOK, "success", updatedUser)
 	c.JSON(http.StatusOK, response)
 }
