@@ -1,7 +1,6 @@
 package user
 
 type RegisterUserResponse struct {
-	ID         int    `json:"id"`
 	Name       string `json:"name"`
 	Occupation string `json:"occupation"`
 	Email      string `json:"email"`
@@ -10,7 +9,6 @@ type RegisterUserResponse struct {
 
 func FormatUser(user User, token string) RegisterUserResponse {
 	userResponse := RegisterUserResponse{
-		ID:         user.ID,
 		Name:       user.Name,
 		Occupation: user.Occupation,
 		Email:      user.Email,
