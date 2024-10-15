@@ -10,17 +10,26 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main(){
+
+	err := godotenv.Load(".env.local")
+	if err != nil {
+		fmt.Print(err)
+		log.Fatal("Error loading .env file")
+	}
+
 	gin.SetMode(gin.DebugMode)
-	dsn := "postgres://default:UErH05WiceYt@ep-white-rain-a1j4lx8q.ap-southeast-1.aws.neon.tech:5432/verceldb?sslmode=require"
+	dsn := os.Getenv("POSTGRES_URL")
   db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {

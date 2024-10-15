@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -17,7 +18,7 @@ func NewService() *service {
 	return &service{}
 }
 
-var SECRET_KEY = []byte("BWASTARTUP_s3cr3T_k3Y")
+var SECRET_KEY = []byte(os.Getenv("JWT_SECRET"))
 
 func (s *service) GenerateToken(userID int) (string, error) {
 

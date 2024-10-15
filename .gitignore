@@ -1,2 +1,5 @@
 # file 
 /images
+
+# enviroment variables
+/.env.local
