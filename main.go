@@ -5,6 +5,7 @@ import (
 	"be-bwastartup/campaign"
 	"be-bwastartup/handler"
 	"be-bwastartup/helper"
+	"be-bwastartup/payment"
 	"be-bwastartup/transaction"
 	"be-bwastartup/user"
 	"fmt"
@@ -40,12 +41,13 @@ func main(){
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
 	transactionRepository := transaction.NewRepository(db)
+	
 
 	// services
+	paymentService := payment.NewService()
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
-	transactionService := transaction.NewService(transactionRepository, campaignRepository)
-
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
 
 	userService := user.NewService(userRepository)
 	userHandler := handler.NewUserHandler(userService, authService)
@@ -75,6 +77,7 @@ func main(){
 	api.GET("/transactions/campaign/:campaign_id", transactionHandler.GetTransactionsByCampaignID)
 	api.GET("/transactions", transactionHandler.GetTransactionByUserID)
 	api.POST("/transactions", transactionHandler.CreateTransaction)
+	router.POST("/api/v1/transactions/notification", transactionHandler.GetNotification)
 	
 
 
