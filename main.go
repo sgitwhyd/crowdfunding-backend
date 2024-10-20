@@ -14,8 +14,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,7 +24,7 @@ import (
 
 func main(){
 
-	err := godotenv.Load(".env.local")
+	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Print(err)
 		log.Fatal("Error loading .env file")
@@ -41,7 +42,6 @@ func main(){
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
 	transactionRepository := transaction.NewRepository(db)
-	
 
 	// services
 	paymentService := payment.NewService()
@@ -55,6 +55,7 @@ func main(){
 	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	api := router.Group("/api/v1")
 	api.Use(AuthMiddleware(authService, userService))
 
@@ -68,7 +69,7 @@ func main(){
 	// campaign
 
 	api.POST("/campaigns", campaignHandler.CreateCampaign)
-	api.GET("/campaigns", campaignHandler.GetCampaigns)
+	router.GET("/api/v1/campaigns", campaignHandler.GetCampaigns)
 	api.POST("/campaigns/images", campaignHandler.SaveCampaignImage)
 	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
 	api.PUT("/campaigns/:id", campaignHandler.UpdateCampaign)
@@ -78,7 +79,14 @@ func main(){
 	api.GET("/transactions", transactionHandler.GetTransactionByUserID)
 	api.POST("/transactions", transactionHandler.CreateTransaction)
 	router.POST("/api/v1/transactions/notification", transactionHandler.GetNotification)
+
+
+	router.GET("/", func(ctx *gin.Context) {
+		response := helper.APIResponse("APP IS ONLINE", http.StatusOK, "Success", nil)
+		ctx.JSON(http.StatusOK, response)
+	})
 	
+
 
 
 	router.Run()
