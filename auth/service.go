@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 )
 
 type Service interface {
