@@ -2,4 +2,4 @@
 /images
 
 # enviroment variables
-/.env.local
+/.env*
