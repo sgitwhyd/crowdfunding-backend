@@ -95,7 +95,7 @@ func main(){
 
 
 
-	router.Run()
+	router.Run(os.Getenv("PORT"))
 
 }
 
