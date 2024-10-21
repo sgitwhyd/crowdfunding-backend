@@ -188,3 +188,16 @@ func (h *userHandler) UpdateUser(c *gin.Context){
 	response := helper.APIResponse("Successfuly updated user data", http.StatusOK, "success", updatedUser)
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *userHandler) GetCurrentUser(c *gin.Context){
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	user := gin.H{
+		"name": currentUser.Name,
+		"email": currentUser.Email,
+		"avatar_url": currentUser.AvatarFileName,
+	}
+
+	response := helper.APIResponse("Successfuly Get Current User", http.StatusOK, "success", user)
+	c.JSON(http.StatusOK, response)
+}
