@@ -30,7 +30,12 @@ func main(){
 		log.Fatal("Error loading .env file")
 	}
 
-	gin.SetMode(gin.DebugMode)
+	if os.Getenv("GIN_MODE") == "release" {	
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	dsn := os.Getenv("POSTGRES_URL")
   db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
@@ -65,6 +70,7 @@ func main(){
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", userHandler.UploadAvatar)
 	api.PUT("/users", userHandler.UpdateUser)
+	api.GET("/users/current", userHandler.GetCurrentUser)
 
 	// campaign
 
