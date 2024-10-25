@@ -19,6 +19,13 @@ func NewUserHandler(userService user.Service, authService auth.Service) *userHan
 	return &userHandler{userService, authService}
 }
 
+// @Tags Auth
+// @Summary Register Example
+// @Description Register API
+// @Produce application/json
+// @Param request body user.RegisterUserInput true "Body Required"
+// @Success 200 {object} helper.response{data=user.RegisterUserResponse}
+// @Router /users [post]
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	// tangkap input dari user
 	var input user.RegisterUserInput
@@ -59,6 +66,13 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 }
 
+// @Tags Auth
+// @Summary Login Example
+// @Description Login API
+// @Produce application/json
+// @Param request body user.LoginUserInput true "Body Required"
+// @Success 200 {object} helper.response{data=user.RegisterUserResponse}
+// @Router /sessions [post]
 func (h *userHandler) Login(c *gin.Context){
 	var input user.LoginUserInput
 	
@@ -92,6 +106,13 @@ func (h *userHandler) Login(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Auth
+// @Summary Check Email Avaiability Example
+// @Description Check Email Avaiability API
+// @Produce application/json
+// @Param request body user.CheckEmailInput true "Body Required"
+// @Success 200 {object} helper.response{data=user.CheckEmailAvailabilityResponse}
+// @Router /email_checker [post]
 func (h *userHandler) CheckEmailAvailability(c *gin.Context){
 	var input user.CheckEmailInput
 
@@ -107,17 +128,17 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context){
 
 	isEmailAvailable, err := h.userService.IsEmailAvailable(input)
 	if err != nil {
-		errorsResponse := gin.H{
-			"is_available": isEmailAvailable,
+		errorsResponse := user.CheckEmailAvailabilityResponse{
+			IsAvailable: isEmailAvailable,
 		}
 		errorResponse := helper.APIResponse("Email checking failed", http.StatusBadRequest, "error", errorsResponse)
 		c.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
 
-	data := gin.H{
-		"is_available": isEmailAvailable,
-	}
+	data :=  user.CheckEmailAvailabilityResponse{
+			IsAvailable: isEmailAvailable,
+		}
 
 	metaMessage := "Email has been registered"
 	if isEmailAvailable {

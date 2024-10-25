@@ -1,0 +1,148 @@
+definitions:
+  helper.meta:
+    properties:
+      code:
+        description: This should be a single int representing an HTTP status code
+        type: integer
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  helper.response:
+    properties:
+      data: {}
+      meta:
+        $ref: '#/definitions/helper.meta'
+    type: object
+  user.CheckEmailAvailabilityResponse:
+    properties:
+      is_available:
+        type: boolean
+    type: object
+  user.CheckEmailInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  user.LoginUserInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  user.RegisterUserInput:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      occupation:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - occupation
+    - password
+    type: object
+  user.RegisterUserResponse:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      occupation:
+        type: string
+      token:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Crowdfunding API Description
+  title: Crowdfunding API
+  version: "1.0"
+paths:
+  /email_checker:
+    post:
+      description: Check Email Avaiability API
+      parameters:
+      - description: Body Required
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.CheckEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.CheckEmailAvailabilityResponse'
+              type: object
+      summary: Check Email Avaiability Example
+      tags:
+      - Auth
+  /sessions:
+    post:
+      description: Login API
+      parameters:
+      - description: Body Required
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.RegisterUserResponse'
+              type: object
+      summary: Login Example
+      tags:
+      - Auth
+  /users:
+    post:
+      description: Register API
+      parameters:
+      - description: Body Required
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.RegisterUserResponse'
+              type: object
+      summary: Register Example
+      tags:
+      - Auth
+swagger: "2.0"

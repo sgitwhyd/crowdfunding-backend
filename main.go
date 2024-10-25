@@ -3,6 +3,7 @@ package main
 import (
 	"be-bwastartup/auth"
 	"be-bwastartup/campaign"
+	"be-bwastartup/docs"
 	"be-bwastartup/handler"
 	"be-bwastartup/helper"
 	"be-bwastartup/payment"
@@ -14,13 +15,21 @@ import (
 	"os"
 	"strings"
 
+	_ "be-bwastartup/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+// @title Crowdfunding API
+// @version 1.0
+// @description Crowdfunding API Description
 
 func main(){
 
@@ -64,16 +73,17 @@ func main(){
 	api := router.Group("/api/v1")
 	api.Use(AuthMiddleware(authService, userService))
 
+	router.POST("/api/v1/sessions", userHandler.Login)
+
+
 
 	router.POST("/api/v1/users", userHandler.RegisterUser)
-	router.POST("/api/v1/sessions", userHandler.Login)
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", userHandler.UploadAvatar)
 	api.PUT("/users", userHandler.UpdateUser)
 	api.GET("/users/current", userHandler.GetCurrentUser)
 
 	// campaign
-
 	api.POST("/campaigns", campaignHandler.CreateCampaign)
 	router.GET("/api/v1/campaigns", campaignHandler.GetCampaigns)
 	api.POST("/campaigns/images", campaignHandler.SaveCampaignImage)
@@ -93,6 +103,10 @@ func main(){
 	})
 	
 
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost" + os.Getenv("PORT"))
+	docs.SwaggerInfo.BasePath = "/api/v1"
+
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 
 	router.Run(os.Getenv("PORT"))
