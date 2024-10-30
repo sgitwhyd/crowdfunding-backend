@@ -108,7 +108,7 @@ func main(){
 	})
 	
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost" + os.Getenv("PORT"))
+	docs.SwaggerInfo.Host = fmt.Sprintf(os.Getenv("BASE_URL"))
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
