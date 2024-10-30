@@ -3,13 +3,14 @@ package transaction
 import (
 	"be-bwastartup/campaign"
 	"be-bwastartup/payment"
+	"be-bwastartup/user"
 	"strconv"
 )
 
 type Service interface {
 	GetByCampaignID(input GetCampaignTransactionInput) ([]Transaction, error)
 	GetByUserID(userID int) ([]Transaction, error)
-	CreateTransaction(input CreateTransactionInput)(Transaction, error)
+	CreateTransaction(input CreateTransactionInput, user user.User)(Transaction, error)
 	ProsesPayment(input TransactionNotificationInput) error
 }
 
@@ -47,13 +48,13 @@ func (s *service) GetByUserID(userID int) ([]Transaction, error){
 	return transactions, nil
 }
 
-func (s *service) CreateTransaction(input CreateTransactionInput)(Transaction, error){
+func (s *service) CreateTransaction(input CreateTransactionInput, user user.User)(Transaction, error){
 
 
 	transactionPayload := Transaction{}
 	transactionPayload.Amount = input.Amount
 	transactionPayload.CampaignID = input.CampaignID
-	transactionPayload.User = input.User
+	transactionPayload.User = user
 	transactionPayload.Status = "pending"
 	transactionPayload.Code = "example-code"
 
@@ -74,7 +75,7 @@ func (s *service) CreateTransaction(input CreateTransactionInput)(Transaction, e
 		Product: campaign.Name,
 	}
 
-	paymentURL, err := s.paymentService.GeneratePaymentURL(paymentPayload, input.User)
+	paymentURL, err := s.paymentService.GeneratePaymentURL(paymentPayload, user)
 	if err != nil {
 		return transaction, err
 	}

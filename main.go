@@ -30,6 +30,11 @@ import (
 // @title Crowdfunding API
 // @version 1.0
 // @description Crowdfunding API Description
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
+
 
 func main(){
 

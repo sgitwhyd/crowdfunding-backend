@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"be-bwastartup/user"
 	"errors"
 	"fmt"
 
@@ -8,11 +9,11 @@ import (
 )
 
 type Service interface {
-	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	CreateCampaign(input CreateCampaignInput, user user.User) (Campaign, error)
 	GetCampaigns(userID int) ([]Campaign, error)
-	UploadCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
+	UploadCampaignImage(input CreateCampaignImageInput, fileLocation string, user user.User) (CampaignImage, error)
 	GetCampaign(input GetCampaignDetailInput) (Campaign, error)
-	UpdateCampaign(inputID GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
+	UpdateCampaign(inputID GetCampaignDetailInput, input CreateCampaignInput, user user.User) (Campaign, error)
 }
 
 type service struct {
@@ -23,16 +24,16 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 }
 
-func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
+func (s *service) CreateCampaign(input CreateCampaignInput, user user.User) (Campaign, error) {
 	campaign := Campaign{}
 	campaign.Name = input.Name
 	campaign.ShortDescription = input.ShortDescription
 	campaign.Description = input.Description
 	campaign.Perks = input.Perks
 	campaign.GoalAmount = input.GoalAmount
-	campaign.UserID = input.User.ID
+	campaign.User = user
 
-	slugFormat := fmt.Sprintf("%s %d", input.Name, input.User.ID)
+	slugFormat := fmt.Sprintf("%s %d", input.Name, user.ID)
 	campaign.Slug = slug.Make(slugFormat)
 
 	newCampaign, err := s.repository.Save(campaign)
@@ -61,14 +62,14 @@ func (s *service) GetCampaigns(userID int) ([]Campaign, error) {
 	return campaigns, nil
 }
 
-func (s *service) UploadCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error) {
+func (s *service) UploadCampaignImage(input CreateCampaignImageInput, fileLocation string,  user user.User) (CampaignImage, error) {
 
 	campaign, err := s.repository.FindByID(input.CampaignID)
 	if err != nil {
 		return CampaignImage{}, errors.New("campaign not found")
 	}
 
-	if campaign.User.ID != input.User.ID {
+	if campaign.User.ID != user.ID {
 		return CampaignImage{}, errors.New("not an owner of the campaign")
 	}
 
@@ -101,16 +102,17 @@ func (s *service) GetCampaign(input GetCampaignDetailInput) (Campaign, error) {
 		return campaign, err
 	}
 
+
 	return campaign, nil
 }
 
-func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error){
+func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, input CreateCampaignInput, user user.User) (Campaign, error){
 	campaign, err := s.repository.FindByID(inputID.ID)
 	if err != nil {
 		return campaign, err
 	}
 
-	if campaign.UserID != input.User.ID {
+	if campaign.UserID != user.ID {
 		return campaign, errors.New("not an owner of the campaign")
 	}
 
@@ -119,7 +121,7 @@ func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, input CreateCam
 	campaign.Description = input.Description
 	campaign.Perks = input.Perks
 	campaign.GoalAmount = input.GoalAmount
-	campaign.User = input.User
+	campaign.User = user
 
 	updatedCampaign, err := s.repository.Update(campaign)
 	if err != nil {

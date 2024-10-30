@@ -1,4 +1,65 @@
 definitions:
+  campaign.CampaignFormatter:
+    properties:
+      current_amount:
+        type: integer
+      goal_amount:
+        type: integer
+      id:
+        type: integer
+      image_url:
+        type: string
+      name:
+        type: string
+      short_description:
+        type: string
+      slug:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  campaign.CreateCampaignImageInput:
+    properties:
+      campaign_id:
+        type: integer
+      is_primary:
+        type: boolean
+    required:
+    - campaign_id
+    type: object
+  campaign.CreateCampaignInput:
+    properties:
+      description:
+        type: string
+      goal_amount:
+        type: integer
+      name:
+        type: string
+      perks:
+        type: string
+      short_description:
+        type: string
+    required:
+    - description
+    - goal_amount
+    - name
+    - perks
+    - short_description
+    type: object
+  handler.GetCurrentUser.UserResponse:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  helper.UploadImageResponse:
+    properties:
+      is_uploaded:
+        type: boolean
+    type: object
   helper.meta:
     properties:
       code:
@@ -15,6 +76,64 @@ definitions:
       meta:
         $ref: '#/definitions/helper.meta'
     type: object
+  transaction.CampaignFormatter:
+    properties:
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
+  transaction.CampaignTransactionFormatter:
+    properties:
+      amount:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  transaction.CreateTransactionInput:
+    properties:
+      amount:
+        type: integer
+      campaign_id:
+        type: integer
+    required:
+    - amount
+    - campaign_id
+    type: object
+  transaction.TransactionFormatter:
+    properties:
+      amount:
+        type: integer
+      campaign_id:
+        type: integer
+      code:
+        type: string
+      id:
+        type: integer
+      payment_url:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  transaction.UserTransactionFormatter:
+    properties:
+      amount:
+        type: integer
+      campaign:
+        $ref: '#/definitions/transaction.CampaignFormatter'
+      created_at:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
   user.CheckEmailAvailabilityResponse:
     properties:
       is_available:
@@ -30,8 +149,10 @@ definitions:
   user.LoginUserInput:
     properties:
       email:
+        example: testing@developer.com
         type: string
       password:
+        example: password
         type: string
     required:
     - email
@@ -64,12 +185,175 @@ definitions:
       token:
         type: string
     type: object
+  user.UploadAvatarResponse:
+    properties:
+      is_uploaded:
+        type: boolean
+    type: object
 info:
   contact: {}
   description: Crowdfunding API Description
   title: Crowdfunding API
   version: "1.0"
 paths:
+  /avatars:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload avatar API
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UploadAvatarResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Upload avatar Example
+      tags:
+      - Auth
+  /campaigns:
+    get:
+      description: Get All Campaign data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/campaign.CampaignFormatter'
+                  type: array
+              type: object
+      summary: Get All Campaign data
+      tags:
+      - Campaign
+    post:
+      description: Create Campaign data
+      parameters:
+      - description: Body Required
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/campaign.CreateCampaignInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/campaign.CampaignFormatter'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create Campaign data
+      tags:
+      - Campaign
+  /campaigns/{id}:
+    get:
+      description: Detail Campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/campaign.CampaignFormatter'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get Campaign Image data
+      tags:
+      - Campaign
+    put:
+      description: Update Campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Campaign Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/campaign.CreateCampaignInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/campaign.CampaignFormatter'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update Campaign data
+      tags:
+      - Campaign
+  /campaigns/images:
+    post:
+      description: Create Campaign Image data
+      parameters:
+      - description: Body Required
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/campaign.CreateCampaignImageInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/helper.UploadImageResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Save Campaign Image data
+      tags:
+      - Campaign
   /email_checker:
     post:
       description: Check Email Avaiability API
@@ -120,6 +404,82 @@ paths:
       summary: Login Example
       tags:
       - Auth
+  /transactions:
+    get:
+      description: Get User Transaction
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/transaction.UserTransactionFormatter'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get User Transaction
+      tags:
+      - Transaction
+    post:
+      description: Create Campaign Transaction
+      parameters:
+      - description: Body Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/transaction.CreateTransactionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/transaction.TransactionFormatter'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create Campaign Transaction
+      tags:
+      - Transaction
+  /transactions/campaign/{campaign_id}:
+    get:
+      description: Get Campaign Transaction
+      parameters:
+      - description: Campaign Id
+        in: path
+        name: campaign_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/transaction.CampaignTransactionFormatter'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get Campaign Transaction
+      tags:
+      - Transaction
   /users:
     post:
       description: Register API
@@ -145,4 +505,29 @@ paths:
       summary: Register Example
       tags:
       - Auth
+  /users/current:
+    get:
+      description: Current User API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.GetCurrentUser.UserResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Current User Example
+      tags:
+      - Auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -17,6 +17,14 @@ func NewTransactionHandler(service transaction.Service) *transactionHandler {
 	return &transactionHandler{service}
 }
 
+// @Tags Transaction
+// @Summary Get Campaign Transaction
+// @Description Get Campaign Transaction
+// @Produce application/json
+// @Param campaign_id path string true "Campaign Id"
+// @Success 200 {object} helper.response{data=[]transaction.CampaignTransactionFormatter}
+// @Router /transactions/campaign/{campaign_id} [get]
+// @Security BearerAuth
 func (h *transactionHandler) GetTransactionsByCampaignID(c *gin.Context){
 	var input transaction.GetCampaignTransactionInput
 
@@ -39,6 +47,13 @@ func (h *transactionHandler) GetTransactionsByCampaignID(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Transaction
+// @Summary Get User Transaction 
+// @Description Get User Transaction 
+// @Produce application/json
+// @Success 200 {object} helper.response{data=[]transaction.UserTransactionFormatter}
+// @Router /transactions [get]
+// @Security BearerAuth
 func (h *transactionHandler) GetTransactionByUserID(c *gin.Context){
 	currentUser := c.MustGet("currentUser").(user.User)
 	userID := currentUser.ID
@@ -58,6 +73,14 @@ func (h *transactionHandler) GetTransactionByUserID(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Transaction
+// @Summary Create Campaign Transaction
+// @Description Create Campaign Transaction
+// @Produce application/json
+// @Param request body transaction.CreateTransactionInput true "Body Request"
+// @Success 200 {object} helper.response{data=transaction.TransactionFormatter}
+// @Router /transactions [post]
+// @Security BearerAuth
 func (h *transactionHandler) CreateTransaction(c *gin.Context){
 	var input transaction.CreateTransactionInput
 
@@ -73,9 +96,8 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context){
 	}
 
 	currentUser := c.MustGet("currentUser").(user.User)
-	input.User = currentUser
 
-	createdTransaction, err := h.service.CreateTransaction(input)
+	createdTransaction, err := h.service.CreateTransaction(input, currentUser)
 	if err != nil {
 		errorResponse := gin.H{
 			"error": "Campaign Not Found",

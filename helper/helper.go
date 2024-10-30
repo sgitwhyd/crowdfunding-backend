@@ -46,3 +46,8 @@ func FormatValidationError(err error) []string {
 
 	return errors
 }
+
+
+type UploadImageResponse struct {
+	IsUploaded bool `json:"is_uploaded"`
+}

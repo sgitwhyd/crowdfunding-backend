@@ -21,3 +21,7 @@ func FormatUser(user User, token string) RegisterUserResponse {
 type CheckEmailAvailabilityResponse struct {
 	IsAvailable bool `json:"is_available"`
 }
+
+type UploadAvatarResponse struct {
+	IsUploaded bool `json:"is_uploaded"`
+}

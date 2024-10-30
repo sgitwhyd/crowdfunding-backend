@@ -149,8 +149,17 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Auth
+// @Summary Upload avatar Example
+// @Description Upload avatar API
+// @Produce application/json
+// @Security BearerAuth
+// @Accept multipart/form-data
+// @Param file formData file true "File to upload"
+// @Success 200 {object} helper.response{data=user.UploadAvatarResponse}
+// @Router /avatars [post]
 func (h *userHandler) UploadAvatar(c *gin.Context){
-	file, err := c.FormFile("avatar")
+	file, err := c.FormFile("file")
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
 		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusUnprocessableEntity, "error", data)
@@ -163,7 +172,9 @@ func (h *userHandler) UploadAvatar(c *gin.Context){
 	path := fmt.Sprintf("images/%d-%s", currentUser.ID, file.Filename)
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
-		data := gin.H{"is_uploaded": false}
+		data := user.UploadAvatarResponse{
+			IsUploaded: false,
+		}
 		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
 		c.JSON(http.StatusBadRequest, errorResponse)
 		return
@@ -171,13 +182,17 @@ func (h *userHandler) UploadAvatar(c *gin.Context){
 
 	_, err = h.userService.UploadAvatar(currentUser.ID, path)
 	if err != nil {
-		data := gin.H{"is_uploaded": false}
+		data := user.UploadAvatarResponse{
+			IsUploaded: false,
+		}
 		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
 		c.JSON(http.StatusBadRequest, errorResponse)
 		return
 	}
 
-	data := gin.H{"is_uploaded": true}
+	data := user.UploadAvatarResponse{
+			IsUploaded: true,
+		}
 	response := helper.APIResponse("Avatar successfuly uploaded", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
 }
@@ -210,13 +225,28 @@ func (h *userHandler) UpdateUser(c *gin.Context){
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Auth
+// @Summary Current User Example
+// @Description Current User API
+// @Produce application/json
+// @Success 200 {object} helper.response{data=handler.GetCurrentUser.UserResponse}
+// @Router /users/current [get]
+// @Security BearerAuth
 func (h *userHandler) GetCurrentUser(c *gin.Context){
+
+	type UserResponse struct {
+		Name string `json:"name"`
+		Email string `json:"email"`
+		AvatarURL string `json:"avatar_url"`
+
+	}
+
 	currentUser := c.MustGet("currentUser").(user.User)
 
-	user := gin.H{
-		"name": currentUser.Name,
-		"email": currentUser.Email,
-		"avatar_url": currentUser.AvatarFileName,
+	user := UserResponse{
+		Name: currentUser.Name,
+		Email: currentUser.Email,
+		AvatarURL: currentUser.AvatarFileName,
 	}
 
 	response := helper.APIResponse("Successfuly Get Current User", http.StatusOK, "success", user)

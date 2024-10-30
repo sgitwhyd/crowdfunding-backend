@@ -19,6 +19,12 @@ func NewCampaignHandler(campaignService campaign.Service) *campaignHandler {
 	return &campaignHandler{campaignService}
 }
 
+// @Tags Campaign
+// @Summary Get All Campaign data
+// @Description Get All Campaign data
+// @Produce application/json
+// @Success 200 {object} helper.response{data=[]campaign.CampaignFormatter}
+// @Router /campaigns [get]
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	
 	userID, _ := strconv.Atoi(c.Query("user_id"))
@@ -35,6 +41,14 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Campaign
+// @Summary Create Campaign data
+// @Description Create Campaign data
+// @Produce application/json
+// @Security BearerAuth
+// @Param request body campaign.CreateCampaignInput true "Body Required"
+// @Success 200 {object} helper.response{data=campaign.CampaignFormatter}
+// @Router /campaigns [post]
 func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	var input = campaign.CreateCampaignInput{}
 
@@ -49,9 +63,9 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 
 	currentUser := c.MustGet("currentUser").(user.User)
 
-	input.User = currentUser
 
-	newCampaign, err := h.campaignService.CreateCampaign(input)
+
+	newCampaign, err := h.campaignService.CreateCampaign(input, currentUser)
 	if err != nil {
 		errorsResponse := gin.H{"errors": err.Error()}
 		response := helper.APIResponse("Create campaign failed", http.StatusBadRequest, "error", errorsResponse)
@@ -63,6 +77,14 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Campaign
+// @Summary Save Campaign Image data
+// @Description Create Campaign Image data
+// @Produce application/json
+// @Security BearerAuth
+// @Param request body campaign.CreateCampaignImageInput true "Body Required"
+// @Success 200 {object} helper.response{data=helper.UploadImageResponse}
+// @Router /campaigns/images [post]
 func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 	var input campaign.CreateCampaignImageInput
 
@@ -94,9 +116,8 @@ func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 	}
 
 	currentUser := c.MustGet("currentUser").(user.User)
-	input.User = currentUser
 
-	_, err = h.campaignService.UploadCampaignImage(input, path)
+	_, err = h.campaignService.UploadCampaignImage(input, path,currentUser)
 	if err != nil {
 		data := gin.H{"is_uploaded": false, "error": err.Error()}
 		errorResponse := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", data)
@@ -110,6 +131,14 @@ func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 
 }
 
+// @Tags Campaign
+// @Summary Get Campaign Image data
+// @Description Detail Campaign
+// @Produce application/json
+// @Security BearerAuth
+// @Param id path  string true "Campaign ID"
+// @Success 200 {object} helper.response{data=campaign.CampaignFormatter}
+// @Router /campaigns/{id} [get]
 func (h *campaignHandler) GetCampaign(c *gin.Context) {
 	var input campaign.GetCampaignDetailInput
 
@@ -129,11 +158,20 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-
+ 
 	response := helper.APIResponse("Campaign detail", http.StatusOK, "success",  campaign.FormatDetailCampaign(campaignDetail))
 	c.JSON(http.StatusOK, response)
 }
 
+// @Tags Campaign
+// @Summary Update Campaign data
+// @Description Update Campaign
+// @Produce application/json
+// @Security BearerAuth
+// @Param id path  string true "Campaign ID"
+// @Param request body campaign.CreateCampaignInput true "Update Campaign Body"
+// @Success 200 {object} helper.response{data=campaign.CampaignFormatter}
+// @Router /campaigns/{id} [put]
 func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 	var inputID campaign.GetCampaignDetailInput
 	var inputData campaign.CreateCampaignInput
@@ -157,9 +195,8 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 	}
 
 	currentUser := c.MustGet("currentUser").(user.User)
-	inputData.User = currentUser
 
-	updatedCampaign, err := h.campaignService.UpdateCampaign(inputID, inputData)
+	updatedCampaign, err := h.campaignService.UpdateCampaign(inputID, inputData, currentUser)
 	if err != nil {
 		errorsResponse := gin.H{"errors": err.Error()}
 		response := helper.APIResponse("Update campaign failed", http.StatusBadRequest, "error", errorsResponse)
