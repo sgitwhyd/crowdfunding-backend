@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_URL: ${POSTGRES_URL}
+      MIDTRANS_SERVER_KEY: ${MIDTRANS_SERVER_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      BASE_URL: ${BASE_URL}
+      GIN_MODE: ${GIN_MODE}
+      PORT: ${PORT}
+    ports:
+      - "3001:3001"
