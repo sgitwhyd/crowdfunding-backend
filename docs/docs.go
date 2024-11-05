@@ -74,6 +74,14 @@ const docTemplate = `{
                     "Campaign"
                 ],
                 "summary": "Get All Campaign data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "find by user_id",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -673,6 +681,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"

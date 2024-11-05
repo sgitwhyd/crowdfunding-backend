@@ -52,6 +52,8 @@ definitions:
         type: string
       email:
         type: string
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -227,6 +229,11 @@ paths:
   /campaigns:
     get:
       description: Get All Campaign data
+      parameters:
+      - description: find by user_id
+        in: query
+        name: user_id
+        type: string
       produces:
       - application/json
       responses:
