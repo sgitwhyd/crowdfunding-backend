@@ -161,6 +161,9 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Create Campaign Image data",
+                "consumes": [
+                    "multipart/form-data"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -170,13 +173,24 @@ const docTemplate = `{
                 "summary": "Save Campaign Image data",
                 "parameters": [
                     {
-                        "description": "Body Required",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/campaign.CreateCampaignImageInput"
-                        }
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Campaign ID",
+                        "name": "campaign_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Is Primary Image",
+                        "name": "is_primary",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -629,20 +643,6 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
-                }
-            }
-        },
-        "campaign.CreateCampaignImageInput": {
-            "type": "object",
-            "required": [
-                "campaign_id"
-            ],
-            "properties": {
-                "campaign_id": {
-                    "type": "integer"
-                },
-                "is_primary": {
-                    "type": "boolean"
                 }
             }
         },

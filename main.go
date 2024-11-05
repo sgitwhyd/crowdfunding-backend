@@ -61,6 +61,7 @@ func main(){
 	}
 
 	fmt.Println("Connection Success")
+	
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
 	transactionRepository := transaction.NewRepository(db)
@@ -79,6 +80,7 @@ func main(){
 	router := gin.Default()
 	router.Use(cors.Default())
 	api := router.Group("/api/v1")
+	router.Static("/images", "./images")
 	api.Use(AuthMiddleware(authService, userService))
 
 	router.POST("/api/v1/sessions", userHandler.Login)

@@ -83,7 +83,10 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 // @Description Create Campaign Image data
 // @Produce application/json
 // @Security BearerAuth
-// @Param request body campaign.CreateCampaignImageInput true "Body Required"
+// @Accept multipart/form-data
+// @Param file formData file true "File to upload"
+// @Param campaign_id formData string true "Campaign ID"
+// @Param is_primary formData boolean false "Is Primary Image"
 // @Success 200 {object} helper.response{data=helper.UploadImageResponse}
 // @Router /campaigns/images [post]
 func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
