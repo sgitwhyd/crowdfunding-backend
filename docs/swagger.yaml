@@ -18,15 +18,6 @@ definitions:
       user_id:
         type: integer
     type: object
-  campaign.CreateCampaignImageInput:
-    properties:
-      campaign_id:
-        type: integer
-      is_primary:
-        type: boolean
-    required:
-    - campaign_id
-    type: object
   campaign.CreateCampaignInput:
     properties:
       description:
@@ -336,14 +327,24 @@ paths:
       - Campaign
   /campaigns/images:
     post:
+      consumes:
+      - multipart/form-data
       description: Create Campaign Image data
       parameters:
-      - description: Body Required
-        in: body
-        name: request
+      - description: File to upload
+        in: formData
+        name: file
         required: true
-        schema:
-          $ref: '#/definitions/campaign.CreateCampaignImageInput'
+        type: file
+      - description: Campaign ID
+        in: formData
+        name: campaign_id
+        required: true
+        type: string
+      - description: Is Primary Image
+        in: formData
+        name: is_primary
+        type: boolean
       produces:
       - application/json
       responses:
