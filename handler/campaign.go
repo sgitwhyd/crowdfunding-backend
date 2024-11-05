@@ -24,6 +24,7 @@ func NewCampaignHandler(campaignService campaign.Service) *campaignHandler {
 // @Description Get All Campaign data
 // @Produce application/json
 // @Success 200 {object} helper.response{data=[]campaign.CampaignFormatter}
+// @Param user_id query string false "find by user_id" 
 // @Router /campaigns [get]
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	

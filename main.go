@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "be-bwastartup/docs"
 
@@ -37,6 +38,8 @@ import (
 
 
 func main(){
+
+	time.LoadLocation("Asia/Jakarta")
 
 	err := godotenv.Load(".env")
 	if err != nil {

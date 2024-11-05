@@ -235,6 +235,7 @@ func (h *userHandler) UpdateUser(c *gin.Context){
 func (h *userHandler) GetCurrentUser(c *gin.Context){
 
 	type UserResponse struct {
+		ID int `json:"id"`
 		Name string `json:"name"`
 		Email string `json:"email"`
 		AvatarURL string `json:"avatar_url"`
@@ -244,6 +245,7 @@ func (h *userHandler) GetCurrentUser(c *gin.Context){
 	currentUser := c.MustGet("currentUser").(user.User)
 
 	user := UserResponse{
+		ID: currentUser.ID,
 		Name: currentUser.Name,
 		Email: currentUser.Email,
 		AvatarURL: currentUser.AvatarFileName,
