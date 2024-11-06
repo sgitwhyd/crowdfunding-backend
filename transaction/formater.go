@@ -37,6 +37,7 @@ type UserTransactionFormatter struct {
 	ID        int               `json:"id"`
 	Amount    int               `json:"amount"`
 	Status    string            `json:"status"`
+	PaymentURL string            `json:"payment_url"`
 	CreatedAt time.Time         `json:"created_at"`
 	Campaign  CampaignFormatter `json:"campaign"`
 }
@@ -52,6 +53,7 @@ func FormatUserTransaction(transaction Transaction) UserTransactionFormatter {
 	formatter.Amount = transaction.Amount
 	formatter.Status = transaction.Status
 	formatter.CreatedAt = transaction.CreatedAt
+	formatter.PaymentURL = transaction.PaymentURL
 
 	campaignFormatter := CampaignFormatter{}
 	campaignFormatter.Name = transaction.Campaign.Name
