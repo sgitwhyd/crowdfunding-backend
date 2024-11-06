@@ -217,11 +217,6 @@ const docTemplate = `{
         },
         "/campaigns/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Detail Campaign",
                 "produces": [
                     "application/json"
@@ -805,6 +800,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "payment_url": {
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"

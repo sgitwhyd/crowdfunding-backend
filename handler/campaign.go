@@ -139,7 +139,6 @@ func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 // @Summary Get Campaign Image data
 // @Description Detail Campaign
 // @Produce application/json
-// @Security BearerAuth
 // @Param id path  string true "Campaign ID"
 // @Success 200 {object} helper.response{data=campaign.CampaignFormatter}
 // @Router /campaigns/{id} [get]

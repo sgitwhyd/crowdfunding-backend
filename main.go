@@ -97,7 +97,7 @@ func main(){
 	api.POST("/campaigns", campaignHandler.CreateCampaign)
 	router.GET("/api/v1/campaigns", campaignHandler.GetCampaigns)
 	api.POST("/campaigns/images", campaignHandler.SaveCampaignImage)
-	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
+	router.GET("/api/v1/campaigns/:id", campaignHandler.GetCampaign)
 	api.PUT("/campaigns/:id", campaignHandler.UpdateCampaign)
 	
 	// transaction
