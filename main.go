@@ -108,12 +108,12 @@ func main(){
 
 
 	router.GET("/", func(ctx *gin.Context) {
-		response := helper.APIResponse("APP IS ONLINE", http.StatusOK, "Success", nil)
+		response := helper.APIResponse("API IS ONLINE", http.StatusOK, "Success", nil)
 		ctx.JSON(http.StatusOK, response)
 	})
 	
 
-	docs.SwaggerInfo.Host = fmt.Sprintf(os.Getenv("BASE_URL"))
+	docs.SwaggerInfo.Host = fmt.Sprint(os.Getenv("BASE_URL"))
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
