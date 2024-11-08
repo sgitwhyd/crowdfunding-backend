@@ -140,7 +140,7 @@ func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 // @Description Detail Campaign
 // @Produce application/json
 // @Param id path  string true "Campaign ID"
-// @Success 200 {object} helper.response{data=campaign.CampaignFormatter}
+// @Success 200 {object} helper.response{data=campaign.CampaignDetailFormatter}
 // @Router /campaigns/{id} [get]
 func (h *campaignHandler) GetCampaign(c *gin.Context) {
 	var input campaign.GetCampaignDetailInput

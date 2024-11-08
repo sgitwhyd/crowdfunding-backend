@@ -63,7 +63,10 @@ func (r *repository) CreateCampaignImage(campaignImage CampaignImage) (CampaignI
 func (r *repository) FindByID(campaignID int) (Campaign, error) {
 	var campaign Campaign
 
-	err := r.db.Preload("User").Preload("CampaignImages").Where("id = ?", campaignID).First(&campaign).Error
+	err := r.db.Preload("User").Preload("CampaignImages").
+   Preload("Transactions", func(db *gorm.DB) *gorm.DB {
+       return db.Where("campaign_id = ?", campaignID).Preload("User") // or use the actual user ID variable here
+   }).Where("id = ?", campaignID).First(&campaign).Error
 	if err != nil {
 		return campaign, err
 	}

@@ -56,6 +56,7 @@ type CampaignDetailFormatter struct {
 	Perks            []string                 `json:"perks"`
 	User             CampaignUserFormatter    `json:"user"`
 	Images           []CampaignImageFormatter `json:"images"`
+	Transactions     []TransactionFormatter   `json:"transactions"`
 }
 
 type CampaignUserFormatter struct {
@@ -66,6 +67,13 @@ type CampaignUserFormatter struct {
 type CampaignImageFormatter struct {
 	ImageURL  string `json:"image_url"`
 	IsPrimary bool   `json:"is_primary"`
+}
+
+type TransactionFormatter struct {
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Amount int    `json:"amount"`
+	CreatedAt string `json:"created_at"`
 }
 
 func FormatDetailCampaign(campaign Campaign) CampaignDetailFormatter {
@@ -113,5 +121,19 @@ func FormatDetailCampaign(campaign Campaign) CampaignDetailFormatter {
 	}
 
 	campaignDetailFormatter.Images = images
+
+	transactions := []TransactionFormatter{}
+	for _, transaction := range campaign.Transactions {
+		transactionFormatter := TransactionFormatter{}
+		transactionFormatter.ID = transaction.ID
+		transactionFormatter.Name = transaction.User.Name
+		transactionFormatter.Amount = transaction.Amount
+		transactionFormatter.CreatedAt = transaction.CreatedAt.String()
+
+		transactions = append(transactions, transactionFormatter)
+	}
+
+	campaignDetailFormatter.Transactions = transactions
+
 	return campaignDetailFormatter
 }
