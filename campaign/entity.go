@@ -18,6 +18,7 @@ type Campaign struct {
 	Slug             string
 	User             user.User
 	CampaignImages  []CampaignImage
+	Transactions 	[]Transaction `gorm:"foreignKey:CampaignID"`
 	CreatedAt     	 time.Time
 	UpdatedAt     	 time.Time
 }
@@ -29,4 +30,13 @@ type CampaignImage struct {
 	IsPrimary int
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type Transaction struct {
+	ID int
+	UserID int
+	CampaignID int 
+	User user.User
+	Amount int
+	CreatedAt time.Time
 }

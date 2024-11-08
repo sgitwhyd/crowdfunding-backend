@@ -1,4 +1,41 @@
 definitions:
+  campaign.CampaignDetailFormatter:
+    properties:
+      backer_count:
+        type: integer
+      current_amount:
+        type: integer
+      description:
+        type: string
+      goal_amount:
+        type: integer
+      id:
+        type: integer
+      image_url:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/campaign.CampaignImageFormatter'
+        type: array
+      name:
+        type: string
+      perks:
+        items:
+          type: string
+        type: array
+      short_description:
+        type: string
+      slug:
+        type: string
+      transactions:
+        items:
+          $ref: '#/definitions/campaign.TransactionFormatter'
+        type: array
+      user:
+        $ref: '#/definitions/campaign.CampaignUserFormatter'
+      user_id:
+        type: integer
+    type: object
   campaign.CampaignFormatter:
     properties:
       current_amount:
@@ -18,6 +55,20 @@ definitions:
       user_id:
         type: integer
     type: object
+  campaign.CampaignImageFormatter:
+    properties:
+      image_url:
+        type: string
+      is_primary:
+        type: boolean
+    type: object
+  campaign.CampaignUserFormatter:
+    properties:
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
   campaign.CreateCampaignInput:
     properties:
       description:
@@ -36,6 +87,17 @@ definitions:
     - name
     - perks
     - short_description
+    type: object
+  campaign.TransactionFormatter:
+    properties:
+      amount:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
     type: object
   handler.GetCurrentUser.UserResponse:
     properties:
@@ -289,7 +351,7 @@ paths:
             - $ref: '#/definitions/helper.response'
             - properties:
                 data:
-                  $ref: '#/definitions/campaign.CampaignFormatter'
+                  $ref: '#/definitions/campaign.CampaignDetailFormatter'
               type: object
       summary: Get Campaign Image data
       tags:
