@@ -246,7 +246,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/campaign.CampaignFormatter"
+                                            "$ref": "#/definitions/campaign.CampaignDetailFormatter"
                                         }
                                     }
                                 }
@@ -612,6 +612,62 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "campaign.CampaignDetailFormatter": {
+            "type": "object",
+            "properties": {
+                "backer_count": {
+                    "type": "integer"
+                },
+                "current_amount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "goal_amount": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/campaign.CampaignImageFormatter"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "perks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/campaign.TransactionFormatter"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/campaign.CampaignUserFormatter"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "campaign.CampaignFormatter": {
             "type": "object",
             "properties": {
@@ -641,6 +697,28 @@ const docTemplate = `{
                 }
             }
         },
+        "campaign.CampaignImageFormatter": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "string"
+                },
+                "is_primary": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "campaign.CampaignUserFormatter": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "campaign.CreateCampaignInput": {
             "type": "object",
             "required": [
@@ -664,6 +742,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "short_description": {
+                    "type": "string"
+                }
+            }
+        },
+        "campaign.TransactionFormatter": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 }
             }
