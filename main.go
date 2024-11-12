@@ -3,7 +3,7 @@ package main
 import (
 	"be-bwastartup/auth"
 	"be-bwastartup/campaign"
-	"be-bwastartup/docs"
+	clod "be-bwastartup/cloudinary"
 	"be-bwastartup/handler"
 	"be-bwastartup/helper"
 	"be-bwastartup/payment"
@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	_ "be-bwastartup/docs"
+	"be-bwastartup/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -67,12 +67,16 @@ func main(){
 	transactionRepository := transaction.NewRepository(db)
 
 	// services
+	cloudinaryService, err := clod.NewService()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	paymentService := payment.NewService()
 	authService := auth.NewService()
-	campaignService := campaign.NewService(campaignRepository)
+	campaignService := campaign.NewService(campaignRepository, cloudinaryService)
 	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
 
-	userService := user.NewService(userRepository)
+	userService := user.NewService(userRepository, cloudinaryService)
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 	transactionHandler := handler.NewTransactionHandler(transactionService)
@@ -84,8 +88,6 @@ func main(){
 	api.Use(AuthMiddleware(authService, userService))
 
 	router.POST("/api/v1/sessions", userHandler.Login)
-
-
 
 	router.POST("/api/v1/users", userHandler.RegisterUser)
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)

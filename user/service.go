@@ -3,6 +3,11 @@ package user
 import (
 	"errors"
 	"log"
+	"mime/multipart"
+	"strconv"
+	"strings"
+
+	cloud "be-bwastartup/cloudinary"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,17 +17,18 @@ type Service interface {
 	GetUserByID(ID int) (User, error)
 	Login(input LoginUserInput) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
-	UploadAvatar(ID int, fileLocation string) (User, error)
+	UploadAvatar(ID int, file *multipart.FileHeader) (User, error)
 	UpdateUser(userID int, input FormUpdateUserInput) (User, error)
 	GetAllUsers() ([]User, error)
 }
 
 type service struct {
 	repository Repository
+	cloudinary cloud.Service
 }
 
-func NewService(repository Repository) *service {
-	return &service{repository}
+func NewService(repository Repository, cloudinary cloud.Service) *service {
+	return &service{repository, cloudinary}
 }
 
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
@@ -89,13 +95,30 @@ func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error){
 	return false, nil
 }
 
-func (s *service) UploadAvatar(ID int, fileLocation string) (User, error){
+func (s *service) UploadAvatar(ID int, file *multipart.FileHeader) (User, error){
 	user, err := s.repository.FindByID(ID)
 	if err != nil {
 		return user, err
 	}
 
-	user.AvatarFileName = fileLocation
+	if user.AvatarFileName != "" {
+		url := strings.Split(user.AvatarFileName, "/")
+		path := strings.Join(url[len(url)-3:], "/")
+		publicID := strings.Split(path, ".")[0]
+
+		_, err := s.cloudinary.DeleteImage(publicID)
+		if err != nil {
+			return User{}, err
+		}
+	}
+
+	ImageUrl, err := s.cloudinary.UploadImage(file, "user", strconv.Itoa(user.ID))
+	if err != nil {
+		return User{}, err
+	}
+
+	user.AvatarFileName = ImageUrl
+
 
 	updatedUser, err := s.repository.Update(user)
 	if err != nil {

@@ -19,4 +19,8 @@ jobs:
           script: |
             cd /var/www/crowdfunding-backend
             sudo git pull origin main
-            sudo docker compose up --build -d
+            docker stop crowdfunding-backend
+            docker rm crowdfunding-backend
+            docker rmi service-crowdfunding-backend
+            docker build -t service-crowdfunding-backend .
+            docker run -d --name crowdfunding-backend service-crowdfunding-backend
