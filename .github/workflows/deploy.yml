@@ -23,4 +23,4 @@ jobs:
             sudo docker rm crowdfunding-backend
             sudo docker rmi service-crowdfunding-backend
             sudo docker build -t service-crowdfunding-backend .
-            sudo docker run -d --name crowdfunding-backend service-crowdfunding-backend
+            sudo docker run -d -p 3001:3001 --name crowdfunding-backend service-crowdfunding-backend
