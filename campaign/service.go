@@ -4,6 +4,10 @@ import (
 	"be-bwastartup/user"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"strconv"
+
+	clod "be-bwastartup/cloudinary"
 
 	"github.com/gosimple/slug"
 )
@@ -11,17 +15,18 @@ import (
 type Service interface {
 	CreateCampaign(input CreateCampaignInput, user user.User) (Campaign, error)
 	GetCampaigns(userID int) ([]Campaign, error)
-	UploadCampaignImage(input CreateCampaignImageInput, fileLocation string, user user.User) (CampaignImage, error)
+	UploadCampaignImage(input CreateCampaignImageInput, file *multipart.FileHeader, user user.User) (CampaignImage, error)
 	GetCampaign(input GetCampaignDetailInput) (Campaign, error)
 	UpdateCampaign(inputID GetCampaignDetailInput, input CreateCampaignInput, user user.User) (Campaign, error)
 }
 
 type service struct {
 	repository Repository
+	cloudinaryService clod.Service
 }
 
-func NewService(repository Repository) *service {
-	return &service{repository}
+func NewService(repository Repository, cloudinaryService clod.Service) *service {
+	return &service{repository, cloudinaryService}
 }
 
 func (s *service) CreateCampaign(input CreateCampaignInput, user user.User) (Campaign, error) {
@@ -62,7 +67,7 @@ func (s *service) GetCampaigns(userID int) ([]Campaign, error) {
 	return campaigns, nil
 }
 
-func (s *service) UploadCampaignImage(input CreateCampaignImageInput, fileLocation string,  user user.User) (CampaignImage, error) {
+func (s *service) UploadCampaignImage(input CreateCampaignImageInput, file *multipart.FileHeader,  user user.User) (CampaignImage, error) {
 
 	campaign, err := s.repository.FindByID(input.CampaignID)
 	if err != nil {
@@ -72,6 +77,7 @@ func (s *service) UploadCampaignImage(input CreateCampaignImageInput, fileLocati
 	if campaign.User.ID != user.ID {
 		return CampaignImage{}, errors.New("not an owner of the campaign")
 	}
+	
 
 	isPrimary := 0
 	if input.IsPrimary {
@@ -84,8 +90,13 @@ func (s *service) UploadCampaignImage(input CreateCampaignImageInput, fileLocati
 
 	campaignImage := CampaignImage{}
 
+	imageUrl, err := s.cloudinaryService.UploadImage(file, "campaign", strconv.Itoa(input.CampaignID))
+	if err != nil {
+		return campaignImage, err
+	}
+
 	campaignImage.CampaignID = input.CampaignID
-	campaignImage.FileName = fileLocation
+	campaignImage.FileName = imageUrl
 	campaignImage.IsPrimary = isPrimary
 
 	newCampaignImage, err := s.repository.CreateCampaignImage(campaignImage)

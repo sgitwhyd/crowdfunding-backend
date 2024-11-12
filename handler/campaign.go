@@ -121,7 +121,7 @@ func (h *campaignHandler) SaveCampaignImage(c *gin.Context){
 
 	currentUser := c.MustGet("currentUser").(user.User)
 
-	_, err = h.campaignService.UploadCampaignImage(input, path,currentUser)
+	_, err = h.campaignService.UploadCampaignImage(input, file, currentUser)
 	if err != nil {
 		data := gin.H{"is_uploaded": false, "error": err.Error()}
 		errorResponse := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", data)
