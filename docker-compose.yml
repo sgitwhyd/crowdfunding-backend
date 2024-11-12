@@ -14,5 +14,5 @@ services:
       PORT: ${PORT}
     ports:
       - "3001:3001"
-    volumes:
-      - ./images:/app/images
+    container_name: crowdfunding-backend
+    image: service-crowdfunding-backend
