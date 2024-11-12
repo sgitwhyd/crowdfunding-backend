@@ -12,17 +12,23 @@ type Service interface{
 	GeneratePaymentURL(transaction Transaction, user user.User)(string, error)
 }
 
-type service struct {}
-
-func NewService() *service {
-	return &service{}
+type service struct {
+	sm snap.Client
 }
 
-var sm snap.Client
+func NewService() *service {
+	MIDTRANS_SERVER_KEY := os.Getenv("MIDTRANS_SERVER_KEY")
+	var sm = snap.Client{}
+
+	sm.New(MIDTRANS_SERVER_KEY, midtrans.Sandbox)
+
+	return &service{
+		sm: sm,
+	}
+
+}
 
 func (s *service) GeneratePaymentURL(transaction Transaction,  user user.User)(string, error){
-	sm.New(os.Getenv("MIDTRANS_SERVER_KEY"), midtrans.Sandbox)
-
 	snapReq := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID: transaction.ID,
@@ -42,7 +48,7 @@ func (s *service) GeneratePaymentURL(transaction Transaction,  user user.User)(s
 		},
 	}
 
-	resp, err := sm.CreateTransaction(snapReq)
+	resp, err := s.sm.CreateTransaction(snapReq)
 	if err != nil {
 		return "", err
 	}
