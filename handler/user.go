@@ -4,7 +4,6 @@ import (
 	"be-bwastartup/auth"
 	"be-bwastartup/helper"
 	"be-bwastartup/user"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -169,18 +168,8 @@ func (h *userHandler) UploadAvatar(c *gin.Context){
 
 	currentUser := c.MustGet("currentUser").(user.User)
 
-	path := fmt.Sprintf("images/%d-%s", currentUser.ID, file.Filename)
-	err = c.SaveUploadedFile(file, path)
-	if err != nil {
-		data := user.UploadAvatarResponse{
-			IsUploaded: false,
-		}
-		errorResponse := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
-		c.JSON(http.StatusBadRequest, errorResponse)
-		return
-	}
 
-	_, err = h.userService.UploadAvatar(currentUser.ID, path)
+	_, err = h.userService.UploadAvatar(currentUser.ID, file)
 	if err != nil {
 		data := user.UploadAvatarResponse{
 			IsUploaded: false,
