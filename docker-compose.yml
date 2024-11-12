@@ -12,6 +12,7 @@ services:
       BASE_URL: ${BASE_URL}
       GIN_MODE: ${GIN_MODE}
       PORT: ${PORT}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
     ports:
       - "3001:3001"
     container_name: crowdfunding-backend
