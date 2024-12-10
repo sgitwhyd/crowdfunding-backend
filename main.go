@@ -7,20 +7,21 @@ import (
 	"be-bwastartup/handler"
 	"be-bwastartup/helper"
 	"be-bwastartup/payment"
+	"be-bwastartup/redis"
 	"be-bwastartup/transaction"
 	"be-bwastartup/user"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"be-bwastartup/docs"
 
+	"be-bwastartup/middleware"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -61,12 +62,13 @@ func main(){
 	}
 
 	fmt.Println("Connection Success")
-	
+
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
 	transactionRepository := transaction.NewRepository(db)
 
 	// services
+
 	cloudinaryService, err := clod.NewService()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -75,17 +77,17 @@ func main(){
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository, cloudinaryService)
 	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
-
+	redisService := redis.NewService()
 	userService := user.NewService(userRepository, cloudinaryService)
 	userHandler := handler.NewUserHandler(userService, authService)
-	campaignHandler := handler.NewCampaignHandler(campaignService)
+	campaignHandler := handler.NewCampaignHandler(campaignService, redisService)
 	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Use(cors.Default())
 	api := router.Group("/api/v1")
 	router.Static("/images", "./images")
-	api.Use(AuthMiddleware(authService, userService))
+	api.Use(middleware.Auth(authService, userService, redisService))
 
 	router.POST("/api/v1/sessions", userHandler.Login)
 
@@ -123,47 +125,4 @@ func main(){
 
 	router.Run(os.Getenv("PORT"))
 
-}
-
-func AuthMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
-	return func(c *gin.Context){
-		autHeader	:= c.GetHeader("Authorization")
-		if !strings.Contains(autHeader, "Bearer"){
-			response := helper.APIResponse("Unauthorize", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		t := strings.Split(autHeader, " ")
-		if len(t) != 2 {
-			response := helper.APIResponse("Unauthorize", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		validatedToken, err := authService.ValidateToken(t[1])
-		if err != nil {
-			errorsResponse := gin.H{"errors": err.Error()}
-			response := helper.APIResponse("Unauthorize", http.StatusUnauthorized, "error", errorsResponse)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		claim, ok := validatedToken.Claims.(jwt.MapClaims)
-		if !ok || !validatedToken.Valid {
-			response := helper.APIResponse("Unauthorize", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		userID := int(claim["user_id"].(float64))
-		user, err := userService.GetUserByID(userID)
-		if err != nil {
-			response := helper.APIResponse("Unauthorize", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-			return
-		}
-
-		c.Set("currentUser", user)	
-	}
 }

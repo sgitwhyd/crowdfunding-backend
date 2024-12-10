@@ -4,19 +4,24 @@ import (
 	"be-bwastartup/campaign"
 	"be-bwastartup/helper"
 	"be-bwastartup/user"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+
+	rdb "be-bwastartup/redis"
 )
 
 type campaignHandler struct {
 	campaignService campaign.Service
+	redisService rdb.Service
 }
 
-func NewCampaignHandler(campaignService campaign.Service) *campaignHandler {
-	return &campaignHandler{campaignService}
+func NewCampaignHandler(campaignService campaign.Service, redisService rdb.Service) *campaignHandler {
+	return &campaignHandler{campaignService, redisService}
 }
 
 // @Tags Campaign
@@ -27,18 +32,42 @@ func NewCampaignHandler(campaignService campaign.Service) *campaignHandler {
 // @Param user_id query string false "find by user_id" 
 // @Router /campaigns [get]
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
-	
 	userID, _ := strconv.Atoi(c.Query("user_id"))
+
+	campaignsCache, err := h.redisService.Get("campaigns")
+	if err == nil {
+		// if no error. campaign found unmarshal and return it
+		var cachedCampaigns []campaign.Campaign
+		err := json.Unmarshal([]byte(campaignsCache), &cachedCampaigns)
+		if err != nil {
+			response := helper.APIResponse("Get campaigns failed", http.StatusBadRequest, "error", nil)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+
+		response := helper.APIResponse("List of campaigns", http.StatusOK, "success", campaign.FormatCampaigns(cachedCampaigns))
+		c.JSON(http.StatusOK, response)
+		return
+	}
 
 	campaigns, err := h.campaignService.GetCampaigns(userID)
 	if err != nil {
-		errorsResponse := gin.H{"errors": err.Error()}
-		response := helper.APIResponse("Get campaigns failed", http.StatusBadRequest, "error", errorsResponse)
+		response := helper.APIResponse("Get campaigns failed", http.StatusNotFound, "error", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := helper.APIResponse("List of campaigns", http.StatusOK, "success", campaign.FormatCampaigns(campaigns))
+	EXPIRED_DURATION := 5 * time.Minute
+	_, err = h.redisService.Save("campaigns", campaigns, EXPIRED_DURATION)
+	if err != nil {
+		data := gin.H{"errors": err.Error()}
+		response := helper.APIResponse("Get campaigns failed", http.StatusInternalServerError, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+
+	response := helper.APIResponse("List of campaigns", http.StatusOK, "success", campaign.FormatCampaigns(campaigns),)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -181,7 +210,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 
 	err := c.ShouldBindUri(&inputID)
 	if err != nil {
-		errors := gin.H{"errors": err.Error()}
+		errors := gin.H{"errors": err.Error(), "e": err}
 
 		response := helper.APIResponse("Update campaign failed", http.StatusBadRequest, "error", errors)
 		c.JSON(http.StatusBadRequest, response)
@@ -192,7 +221,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 	if err != nil {
 		errors := gin.H{"errors": err.Error()}
 
-		response := helper.APIResponse("Update campaign failed", http.StatusBadRequest, "error", errors)
+		response := helper.APIResponse("Update campaign failed", http.StatusUnprocessableEntity, "error", errors)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -202,7 +231,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context){
 	updatedCampaign, err := h.campaignService.UpdateCampaign(inputID, inputData, currentUser)
 	if err != nil {
 		errorsResponse := gin.H{"errors": err.Error()}
-		response := helper.APIResponse("Update campaign failed", http.StatusBadRequest, "error", errorsResponse)
+		response := helper.APIResponse("Update campaign failed", http.StatusNotAcceptable, "error", errorsResponse)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}

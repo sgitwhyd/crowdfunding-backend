@@ -1,6 +1,8 @@
 package campaign
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	Save(campaign Campaign) (Campaign, error)
@@ -43,12 +45,13 @@ func (r *repository) FindByUserID(userID int) ([]Campaign, error) {
 func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
 
-	err := r.db.Preload("CampaignImages" , "campaign_images.is_primary = 1").Preload("User").Find(&campaigns).Error
-	if err != nil {
-		return campaigns, err
-	}
-
-	return campaigns, nil
+		err := r.db.Preload("CampaignImages" , "campaign_images.is_primary = 1").Preload("User").Find(&campaigns).Error
+		if err != nil {
+			return campaigns, err
+		}
+	
+return campaigns, nil
+	
 }
 
 func (r *repository) CreateCampaignImage(campaignImage CampaignImage) (CampaignImage, error) {
@@ -67,6 +70,7 @@ func (r *repository) FindByID(campaignID int) (Campaign, error) {
    Preload("Transactions", func(db *gorm.DB) *gorm.DB {
        return db.Where("campaign_id = ?", campaignID).Preload("User") // or use the actual user ID variable here
    }).Where("id = ?", campaignID).First(&campaign).Error
+
 	if err != nil {
 		return campaign, err
 	}
