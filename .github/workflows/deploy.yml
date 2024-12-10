@@ -17,10 +17,8 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /var/www/crowdfunding-backend
-            sudo git pull origin main
-            sudo docker stop crowdfunding-backend
-            sudo docker rm crowdfunding-backend
-            sudo docker rmi service-crowdfunding-backend
-            sudo docker build -t service-crowdfunding-backend .
-            sudo docker run -d -p 3001:3001 --name crowdfunding-backend service-crowdfunding-backend
+            sudo docker stop funding-backend
+            sudo docker container rm funding-backend
+            sudo docker rmi sigitwhyd/funding:main
+            sudo docker pull sigitwhyd/funding:main
+            sudo docker run -d -p 3001:3001 --name funding-backend sigitwhyd/funding:main
