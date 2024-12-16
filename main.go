@@ -91,6 +91,14 @@ func main(){
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// logging error middleware
+	router.Use(func(c *gin.Context) {
+    c.Next()
+    if len(c.Errors) > 0 {
+        log.Println("Middleware Error:", c.Errors)
+    }
+	})
+
 
 	api := router.Group("/api/v1")
 	router.Static("/images", "./images")
